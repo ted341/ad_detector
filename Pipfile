@@ -11,6 +11,10 @@ opencv-python = "*"
 pyyaml = "*"
 click = "*"
 numpy = "*"
+scenedetect = "*"
+scipy = "*"
+matplotlib = "*"
+antropy = "*"
 
 [dev-packages]
 
