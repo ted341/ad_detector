@@ -3,17 +3,28 @@
 print('Loading packages...')
 
 import click
+import yaml
 
 from ad_detector.shotdetector import ShotDetector
 from ad_detector.featurebuilder import FeatureBuilder
+from ad_detector.logo_detector import LogoDetector
 from ad_detector.shotclassifier import ShotClassifier
 
 @click.command()
 @click.argument('input_video', type=click.Path(exists=True))
 @click.argument('input_audio', type=click.Path(exists=True))
+@click.argument('output_video', type=click.Path())
+@click.argument('output_audio', type=click.Path())
 @click.option('-d', '--dataset', 'dataset', type=int, default=None)
-def main(input_video, input_audio, dataset):
+def main(input_video, input_audio, output_video, output_audio, dataset):
     print('Start detecting...')
+    with open("config.yaml") as f:
+        config = yaml.safe_load(f)
+    
+    logo_detector = LogoDetector(input_video, output_video, config)
+    # return all frames after processing
+    _ = logo_detector.run()
+    
     shot_detector = ShotDetector(input_video)
     if dataset is None:
         shots = shot_detector.detect(save_json=True)
@@ -29,6 +40,5 @@ def main(input_video, input_audio, dataset):
     shot_classifier.plot()
     
     
-
 if __name__ == '__main__':
     main()
