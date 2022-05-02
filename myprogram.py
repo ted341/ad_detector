@@ -17,7 +17,8 @@ def main(input_video, input_audio, output_video, output_audio):
         config = yaml.safe_load(f)
     
     logo_detector = LogoDetector(input_video, output_video, config)
-    logo_detector.run()
+    # return all frames after processing
+    _ = logo_detector.run()
 
     '''
     shot_detector = ShotDetector(input_video, input_audio)

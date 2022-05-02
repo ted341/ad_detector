@@ -27,3 +27,6 @@ detect:
     edgeThreshold: 30
     # default: 1.6
     sigma: 1.6
+demo:
+  # 0-2
+  testcase: 2
