@@ -1,4 +1,6 @@
-dataset*
 .ipynb_checkpoints
 .DS_Store
 .vscode
+
+dataset*
+ad_detector/__pycache__
