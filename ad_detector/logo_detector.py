@@ -14,6 +14,8 @@ class LogoDetector:
         self.feature_detector = cv2.SIFT_create(**config["detect"]["sift"])
         self.feature_matcher = cv2.BFMatcher()
 
+        self.ratio = config["detect"]["ratio"]
+        self.saturation = config["detect"]["saturation"]
         self.gamma_value = config["detect"]["gamma"]
         self.gamma_lookup = np.array(
             [
@@ -26,8 +28,15 @@ class LogoDetector:
         self.show_result = config["detect"]["debug"]
         self.write_output_file = config["detect"]["export"]
 
-    def __apply_gamma_correction(self, image):
-        return cv2.LUT(image, self.gamma_lookup)
+    def __apply_gamma_correction(self, bgr):
+        return cv2.LUT(bgr, self.gamma_lookup)
+
+    def __increase_saturation(self, bgr):
+        hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+        hsv[:, :, 1] = hsv[:, :, 1] * self.saturation
+        # hsv[:,:,2] = hsv[:,:,2]*1 # brightness
+        cv2.inRange(hsv, (0, 0, 0), (255, 255, 255))
+        return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
     def __detect_features(self, image):
         return self.feature_detector.detectAndCompute(image, None)
@@ -38,12 +47,13 @@ class LogoDetector:
             for first, second in self.feature_matcher.knnMatch(
                 query_desc, train_desc, k=2
             )
-            if first.distance < 0.7 * second.distance
+            if first.distance < self.ratio * second.distance
         ]
         return matches
 
     def __draw_bounding_box(self, frame, matches, query_kps, train_kps):
-        if len(matches) < 4:
+        # Skip if too few match points
+        if len(matches) < 8:
             return
 
         # Collect points of matching features from query and train images
@@ -52,7 +62,6 @@ class LogoDetector:
 
         # Calculate transformation matrix
         matrix, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
-        #print(matrix)
         if matrix is not None:
             # apply perspective transform to train image corners to get a bounding box coordinates on a sample image
             shape = (self.video_height, self.video_width)
@@ -69,11 +78,19 @@ class LogoDetector:
                 matrix,
             )
             # find minimum rectangle of the mapping points on train image
-            rect = cv2.minAreaRect(map_pts)
+            c, (w, h), a = cv2.minAreaRect(map_pts)
+            # remove false positives
+            if (
+                w / h <= 1 / 3
+                or w / h >= 3
+                or w < 30
+                or h < 30
+                or (a >= 10 and a <= 80)
+            ):
+                return
             # generate four bounding points
-            box = cv2.boxPoints(rect)
-            # convert to integers
-            box = np.int0(box)
+            box = np.int0(cv2.boxPoints((c, (w, h), a)))
+            # draw bounding box
             cv2.drawContours(frame, [box], -1, (0, 255, 0), 2)
 
     def __export(self, frame):
@@ -84,9 +101,10 @@ class LogoDetector:
     def run(self):
 
         result = []
+
         frame_size = self.video_height * self.video_width * 3
         # Read logo image into gray scale for feature matching
-        logo_image = cv2.imread(self.input_logos[5], cv2.IMREAD_GRAYSCALE)
+        logo_image = cv2.imread(self.input_logos[1], cv2.IMREAD_COLOR)
         # Generate features from the image
         logo_kps, logo_desc = self.__detect_features(logo_image)
 
@@ -100,27 +118,23 @@ class LogoDetector:
             frame = np.moveaxis(frame, 0, -1)
             # Convert RGB to BGR (cannot flip by [::-1])
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-            #print(frame)
-            # Store filtered frame elsewhere so the original frame isn't modified
-            tmp_frame = self.__apply_gamma_correction(frame)
-            #print(tmp_frame)
-            # Convert image to gray scale
-            tmp_frame = cv2.cvtColor(tmp_frame, cv2.COLOR_BGR2GRAY)
-            #print(tmp_frame)
+            # Adjust color of the frame
+            # tmp_frame = self.__apply_gamma_correction(frame)
+            tmp_frame = self.__increase_saturation(frame)
             # Generate features from the image
             frame_kps, frame_desc = self.__detect_features(tmp_frame)
-            # Conduct Knn matching
+            # Perform Knn matching
             matches = self.__match_descriptors(logo_desc, frame_desc)
             # Highlight the logo on the frame
             self.__draw_bounding_box(frame, matches, logo_kps, frame_kps)
-            
+
             if self.show_result:
                 # Display the resulting frame
                 cv2.imshow("Video", frame)
                 # Press Q on keyboard to  exit
                 if cv2.waitKey(10) & 0xFF == ord("q"):
                     break
-            
+
             if self.write_output_file:
                 self.__export(frame)
 

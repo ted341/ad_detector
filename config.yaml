@@ -14,6 +14,7 @@ detect:
   debug: true
   export: true
   gamma: 1.6
+  saturation: 1.15
   ratio: 0.7
   sift:
     # default: 0
@@ -21,8 +22,8 @@ detect:
     # default: 3
     nOctaveLayers: 3
     # default: 0.04
-    contrastThreshold: 0.04
+    contrastThreshold: 0.09
     # default: 10
-    edgeThreshold: 10
+    edgeThreshold: 30
     # default: 1.6
     sigma: 1.6
