@@ -4,19 +4,19 @@ import yaml
 
 from ad_detector.shotdetector import ShotDetector
 from ad_detector.featurebuilder import FeatureBuilder
-from ad_detector.logo_detector import LogoDetector, VideoFormat
+from ad_detector.logo_detector import LogoDetector
 
 @click.command()
 @click.argument('input_video', type=click.Path(exists=True))
 @click.argument('input_audio', type=click.Path(exists=True))
-def main(input_video, input_audio):
+@click.argument('output_video', type=click.Path())
+@click.argument('output_audio', type=click.Path())
+def main(input_video, input_audio, output_video, output_audio):
 
-    with open("format.yaml") as file:
-        config = yaml.safe_load(file)
-
-    input_logo = "dataset/Brand Images/starbucks_logo.bmp"
-    video_format = VideoFormat(config["video_height"], config["video_width"])
-    logo_detector = LogoDetector(input_video, input_logo, video_format)
+    with open("config.yaml") as f:
+        config = yaml.safe_load(f)
+    
+    logo_detector = LogoDetector(input_video, output_video, config)
     logo_detector.run()
 
     '''
