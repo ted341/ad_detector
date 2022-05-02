@@ -1,6 +1,9 @@
 import wave
 import yaml
 import numpy as np
+from antropy import spectral_entropy
+from sklearn.cluster import KMeans
+import audioop
 
 
 class FeatureBuilder:
@@ -12,19 +15,20 @@ class FeatureBuilder:
             self.rate = yaml.safe_load(file)['audio_rate']
         
         self.shots = shots
-        self.audio_segments = self._load_audio()
+        self.audio_segments = self._segment_audio()
     
-    def _load_audio(self):
+    def _segment_audio(self):
+        print('Segment audio data...')
         segments = []
         with wave.open(self.input_audio, 'rb') as wf:
             for shot in self.shots:
                 start_position = int(shot.start_timestamp * self.rate)
                 wf.setpos(start_position)
                 
-                total_audio_frames = int((shot.end_timestamp - shot.start_timestamp) * self.rate)
+                total_audio_frames = int((shot.duration) * self.rate)
                 raw_data = wf.readframes(total_audio_frames)
                 segments.append(np.frombuffer(raw_data, dtype=np.int16))
-            # self.__test_play_audio(wf, segments[6])
+            # self.__test_play_audio(wf, segments[-4])
         return segments
     
     def __test_play_audio(self, wf, data):
@@ -40,6 +44,30 @@ class FeatureBuilder:
         stream.close()
         p.terminate()
             
-    
     def build(self):
-        pass
+        print('Building features...', end='')
+        for i, audio in enumerate(self.audio_segments):
+            shot = self.shots[i]
+            shot.features['entropy'] = self.build_spectral_entropy(audio)
+            shot.features['duration'] = self.build_duration(shot)
+            shot.features['snr'] = self.build_snr(audio)
+            shot.features['edratio'] = shot.features['entropy'] / shot.features['duration']
+        print('done')
+    
+    def build_spectral_entropy(self, audio):
+        return spectral_entropy(audio, self.rate)
+    
+    def build_rms(self, audio):
+        return audioop.rms(audio, 2)  # 2: 16bits per sample
+    
+    def build_duration(self, shot):
+        return shot.duration
+    
+    def build_snr(self, audio, axis=0, ddof=0):
+        """signal-to-noise. Not a good feature"""
+        a = np.asanyarray(audio)
+        m = a.mean(axis)
+        sd = a.std(axis=axis, ddof=ddof)
+        return np.where(sd == 0, 0, m/sd)
+
+            
