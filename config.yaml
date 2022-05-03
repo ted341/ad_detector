@@ -12,7 +12,7 @@ logo:
     - "dataset3/Brand Images/hrc_logo.bmp"
 detect:
   debug: true
-  export: true
+  export: false
   gamma: 1.6
   saturation: 1.15
   ratio: 0.7
