@@ -1,12 +1,21 @@
 import math
+
 import numpy as np
 from matplotlib import pyplot as plt
+import yaml
+from tqdm import trange, tqdm
+import wave
 
 np.set_printoptions(precision=3)
+
 
 class ShotClassifier:
     def __init__(self, shots):
         self.shots = shots
+        
+        with open("format.yaml") as file:
+            format = yaml.safe_load(file)
+            self.audio_rate = format['audio_rate']
     
     def classify(self):
         # Pass 1: 1 seconds <= duration <= 10 seconds
@@ -22,38 +31,37 @@ class ShotClassifier:
                 shot.is_ad = shot.features['edratio'] > 2
         
         # Pass 3: Relabel ads with duration < 8 seconds to non-ads
+        scenes = []
         current_is_ad = self.shots[0].is_ad
         duration = self.shots[0].duration
         start_seq, end_seq = shot.sequence, shot.sequence
-        ad_time_list = []
         for shot in self.shots[1:]:
             if current_is_ad == shot.is_ad:
                 duration += shot.duration
                 end_seq = shot.sequence
             else:
-                ad_time_list.append({'is_ad': current_is_ad,
-                                     'start_seq': start_seq,
-                                     'end_seq': end_seq,
-                                     'duration': duration})
+                scenes.append({'is_ad': current_is_ad,
+                               'start_seq': start_seq,
+                               'end_seq': end_seq,
+                               'duration': duration})
                 current_is_ad = shot.is_ad
                 duration = shot.duration
                 start_seq, end_seq = shot.sequence, shot.sequence
-        ad_time_list.append({'is_ad': current_is_ad,
-                             'start_seq': start_seq,
-                             'end_seq': end_seq,
-                             'duration': duration})
-        for ad_time in ad_time_list:
-            print(ad_time)
-            if ad_time['duration'] < 8:
-                for i in range(ad_time['start_seq'], ad_time['end_seq']+1):
-                    self.shots[i].is_ad = not ad_time['is_ad']
+        scenes.append({'is_ad': current_is_ad,
+                       'start_seq': start_seq,
+                       'end_seq': end_seq,
+                       'duration': duration})
+        for scene in scenes:
+            if scene['duration'] < 8:
+                for i in range(scene['start_seq'], scene['end_seq']+1):
+                    self.shots[i].is_ad = not scene['is_ad']
         
         print(''.join(['A' if shot.is_ad else 'N' for shot in self.shots]))
         print(''.join(['A' if shot.test_is_ad else 'N' for shot in self.shots]))    
     
     def plot(self):
-        # self._plot2D('snr', 'duration')
-        self._plot1D('snr')
+        self._plot2D('edratio', 'duration')
+        # self._plot1D('snr')
     
     def _plot2D(self, xlabel, ylabel):
         is_ad = []

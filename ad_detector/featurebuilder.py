@@ -34,7 +34,7 @@ class FeatureBuilder:
     def __test_play_audio(self, wf, data):
         import pyaudio
         p = pyaudio.PyAudio()
-        stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+        stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),  # 2
                 channels=wf.getnchannels(),
                 rate=wf.getframerate(),
                 output=True)
