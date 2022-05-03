@@ -45,7 +45,7 @@ class LogoDetector:
     def __match_descriptors(self, query_desc, train_desc):
         matches = []
         for m in self.feature_matcher.knnMatch(query_desc, train_desc, k=2):
-            if len(m)==2 and m[0].distance < self.ratio * m[1].distance:
+            if len(m) == 2 and m[0].distance < self.ratio * m[1].distance:
                 matches.append([m[0]])
         return matches
 
@@ -77,7 +77,8 @@ class LogoDetector:
             c, (w, h), a = cv2.minAreaRect(map_pts)
             # remove false positives
             if (
-                w==0 or h==0
+                w == 0
+                or h == 0
                 or w / h <= 1 / 3
                 or w / h >= 3
                 or w < 30
@@ -87,14 +88,20 @@ class LogoDetector:
                 return False
             # generate four bounding points
             box = np.int0(cv2.boxPoints((c, (w, h), a)))
+            # remove false positive
+            if not (
+                np.all(box[:, 0] >= 0)
+                or np.all(box[:, 0] < shape[1])
+                or np.all(box[:, 1] >= 0)
+                or np.all(box[:, 1] < shape[0])
+            ):
+                return False
             # draw bounding box
             cv2.drawContours(frame, [box], -1, (0, 255, 0), 2)
-        
+
         return True
 
     def __export(self, frame):
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame = np.moveaxis(frame, -1, 0)
         self.output_video.write(frame.tobytes())
 
     def run(self):
@@ -103,11 +110,11 @@ class LogoDetector:
         frame_size = self.video_height * self.video_width * 3
 
         # logo 1
-        logo_image = cv2.imread(self.input_logos[self.testcase*2], cv2.IMREAD_COLOR)
+        logo_image = cv2.imread(self.input_logos[self.testcase * 2], cv2.IMREAD_COLOR)
         logo_kps, logo_desc = self.__detect_features(logo_image)
 
         # logo 2
-        logo2_image = cv2.imread(self.input_logos[self.testcase*2+1], cv2.IMREAD_COLOR)
+        logo2_image = cv2.imread(self.input_logos[self.testcase * 2 + 1], cv2.IMREAD_COLOR)
         logo2_kps, logo2_desc = self.__detect_features(logo2_image)
 
         # Do processing frame by frame
@@ -142,6 +149,9 @@ class LogoDetector:
                 # Press Q on keyboard to  exit
                 if cv2.waitKey(10) & 0xFF == ord("q"):
                     break
+
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = np.moveaxis(frame, -1, 0)
 
             if self.write_output_file:
                 self.__export(frame)
