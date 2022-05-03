@@ -28,6 +28,7 @@ class LogoDetector:
         self.show_result = config["detect"]["debug"] or False
         self.write_output_file = config["detect"]["export"] or False
         self.testcase = config["demo"]["testcase"] or 0
+        self.detections = {}
 
     def __apply_gamma_correction(self, bgr):
         return cv2.LUT(bgr, self.gamma_lookup)
@@ -43,13 +44,20 @@ class LogoDetector:
         return self.feature_detector.detectAndCompute(image, None)
 
     def __match_descriptors(self, query_desc, train_desc):
-        matches = []
-        for m in self.feature_matcher.knnMatch(query_desc, train_desc, k=2):
-            if len(m) == 2 and m[0].distance < self.ratio * m[1].distance:
-                matches.append([m[0]])
-        return matches
+        good_matches = []
 
-    def __draw_bounding_box(self, frame, matches, query_kps, train_kps):
+        try:
+            matches = self.feature_matcher.knnMatch(query_desc, train_desc, k=2)
+        except:
+            return good_matches
+
+        for m in matches:
+            if len(m) == 2 and m[0].distance < self.ratio * m[1].distance:
+                good_matches.append([m[0]])
+
+        return good_matches
+
+    def __draw_bounding_box(self, frame, matches, query_kps, train_kps) -> bool:
         # Skip if too few match points
         if len(matches) < 8:
             return False
@@ -61,14 +69,14 @@ class LogoDetector:
         # Calculate transformation matrix
         if (matrix := cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)[0]) is not None:
             # map four corners of query image to train image based on the perspective (might not look rectangular)
-            shape = (self.video_height, self.video_width)
+            shape = (self.video_width, self.video_height)
             map_pts = cv2.perspectiveTransform(
                 np.float32(
                     [
                         (0, 0),
-                        (0, shape[0] - 1),
-                        (shape[1] - 1, shape[0] - 1),
-                        (shape[1] - 1, 0),
+                        (0, shape[1] - 1),
+                        (shape[0] - 1, shape[1] - 1),
+                        (shape[0] - 1, 0),
                     ]
                 ).reshape(-1, 1, 2),
                 matrix,
@@ -91,15 +99,17 @@ class LogoDetector:
             # remove false positive
             if not (
                 np.all(box[:, 0] >= 0)
-                or np.all(box[:, 0] < shape[1])
-                or np.all(box[:, 1] >= 0)
-                or np.all(box[:, 1] < shape[0])
+                and np.all(box[:, 0] < shape[0])
+                and np.all(box[:, 1] >= 0)
+                and np.all(box[:, 1] < shape[1])
             ):
                 return False
+
             # draw bounding box
             cv2.drawContours(frame, [box], -1, (0, 255, 0), 2)
+            return True
 
-        return True
+        return False
 
     def __export(self, frame):
         self.output_video.write(frame.tobytes())
@@ -110,13 +120,16 @@ class LogoDetector:
         frame_size = self.video_height * self.video_width * 3
 
         # logo 1
+        logo_name = self.input_logos[self.testcase * 2].split("/")[-1].split("_")[0]
         logo_image = cv2.imread(self.input_logos[self.testcase * 2], cv2.IMREAD_COLOR)
         logo_kps, logo_desc = self.__detect_features(logo_image)
 
         # logo 2
+        logo2_name = self.input_logos[self.testcase * 2 + 1].split("/")[-1].split("_")[0]
         logo2_image = cv2.imread(self.input_logos[self.testcase * 2 + 1], cv2.IMREAD_COLOR)
         logo2_kps, logo2_desc = self.__detect_features(logo2_image)
 
+        i = 0
         # Do processing frame by frame
         while raw := self.input_video.read(frame_size):
             # Convert byte array to ndarray which is compatible with OpenCV Mat data type
@@ -135,13 +148,16 @@ class LogoDetector:
             # Perform Knn matching
             matches = self.__match_descriptors(logo_desc, frame_desc)
             # Highlight the logo on the frame
-            matched = self.__draw_bounding_box(frame, matches, logo_kps, frame_kps)
-
-            if not matched:
-                # Perform Knn matching
+            if self.__draw_bounding_box(frame, matches, logo_kps, frame_kps):
+                self.detections.setdefault(logo_name, [])
+                self.detections[logo_name].append(i)
+            else:
+                # Detect second logo
                 matches = self.__match_descriptors(logo2_desc, frame_desc)
                 # Highlight the logo on the frame
-                self.__draw_bounding_box(frame, matches, logo2_kps, frame_kps)
+                if self.__draw_bounding_box(frame, matches, logo2_kps, frame_kps):
+                    self.detections.setdefault(logo2_name, [])
+                    self.detections[logo2_name].append(i)
 
             if self.show_result:
                 # Display the resulting frame
@@ -157,6 +173,7 @@ class LogoDetector:
                 self.__export(frame)
 
             result.append(frame)
+            i += 1
 
         # Close all the frames
         cv2.destroyAllWindows()
@@ -167,3 +184,6 @@ class LogoDetector:
         self.output_video.close()
 
         return result
+
+    def get_detected_framelist(self):
+        return self.detections
