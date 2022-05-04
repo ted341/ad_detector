@@ -35,7 +35,7 @@ class OutputGenerator:
             self.video_width = config['video']['width']
             self.video_height = config['video']['height']
             self.video_fps = config['video']['frame_rate']
-            self.audio_rate = config['audio']['rate']
+            self.audio_rate = config['audio']['frame_rate']
             self.ad_path = config['ad']
             
     

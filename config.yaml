@@ -3,7 +3,7 @@ video:
   width: 480
   frame_rate: 30
 audio:
-  rate: 48000
+  frame_rate: 48000
 logo:
   paths:
     - "dataset/Brand Images/subway_logo.bmp"
@@ -12,15 +12,8 @@ logo:
     - "dataset2/Brand Images/nfl_logo.bmp"
     - "dataset3/Brand Images/ae_logo.bmp"
     - "dataset3/Brand Images/hrc_logo.bmp"
-ad:
-  starbucks: "dataset/Ads/Starbucks_Ad_15s"
-  subway: "dataset/Ads/Subway_ad_15s"
-  mcd: "dataset2/Ads/mcd_Ad_15s"
-  nfl: "dataset2/Ads/nfl_Ad_15s"
-  ae: "dataset3/Ads/ae_ad_15s"
-  hrc: "dataset3/Ads/hrc_ad_15s"
 detect:
-  debug: false
+  debug: true
   export: false
   gamma: 1.6
   saturation: 1.15
@@ -38,4 +31,4 @@ detect:
     sigma: 1.6
 demo:
   # 0-2
-  testcase: 0
+  testcase: 2

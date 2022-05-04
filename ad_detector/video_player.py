@@ -1,70 +1,65 @@
-from dataclasses import dataclass
 from time import time, sleep
-
 import numpy as np
 import wave
 import pyaudio
 import cv2
 
 
-@dataclass
-class CombinedFrame:
-    bgr: np.ndarray
-    audio: bytes
-
-
 class VideoPlayer:
-    def __init__(self, width, height, fps, audio_rate):
-        self.is_paused = False
-        self.width = width
-        self.height = height
-        self.fps = fps
-        self.audio_rate = audio_rate
-        self.data = []
-    
-    def load(self, video_path, audio_path):
-        t1 = time()
-        
-        # Load Video
-        raw_bytes = np.fromfile(video_path, np.dtype('B'))
-        frame_count = len(raw_bytes) // (self.height*self.width*3)
-        frames = raw_bytes.reshape((frame_count, 3, self.height, self.width))
-        frames = np.moveaxis(frames, 1, -1)  # pack rgb values per pixel
-        
-        # Load Audio
-        self.wf = wave.open(audio_path, 'rb')
-        self.audio_sample_width = self.audio_rate // self.fps
-        
-        # Combine video and audio and append it to self.data
-        for i, frame in enumerate(frames):
-            frame[:, :, [2, 0]] = frame[:, :, [0, 2]]  # swap from RGB to BGR
-            combined_frame = CombinedFrame(bgr=frame,
-                                           audio=self.wf.readframes(self.audio_sample_width))
-            self.data.append(combined_frame)
-            
-        print(f'Loading completed, time eclipsed: {time() - t1} s')
-    
+    def __init__(self, input_video, input_audio, config):
+        self._input_video = open(input_video, "rb")
+        self._input_audio = wave.open(input_audio, "rb")
+        self._player = pyaudio.PyAudio()
+        self._output_stream = self._player.open(
+            format=self._player.get_format_from_width(self._input_audio.getsampwidth()),
+            channels=self._input_audio.getnchannels(),
+            rate=self._input_audio.getframerate(),
+            output=True,
+        )
+
+        self._video_height = config["video"]["height"]
+        self._video_width = config["video"]["width"]
+        self._frame_size = self._video_height * self._video_width * 3
+        self._video_frame_rate = config["video"]["frame_rate"] or 30
+        # audio samples in the length of a video frame
+        self._samples_per_frame = (
+            self._input_audio.getframerate() // self._video_frame_rate
+        )
+
     def play(self):
-        p = pyaudio.PyAudio()
-        stream = p.open(format=p.get_format_from_width(self.wf.getsampwidth()),
-                        channels=self.wf.getnchannels(),
-                        rate=self.wf.getframerate(),
-                        output=True)
-        
-        for i, frame in enumerate(self.data):
-            if not self.is_paused:
-                start_time = time()
-                
-                cv2.imshow('film', frame.bgr)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-                
-                wait_time = 1 / self.fps - (time() - start_time)
-                if wait_time > 0:
-                    stream.write(frame.audio) # Sequencial
-                    sleep(wait_time)
-        
-        stream.stop_stream()
-        stream.close()
-        p.terminate()
+
+        while True:
+            start_time = time()
+            # Read one frame at a time
+            if (raw_frame := self._input_video.read(self._frame_size)) is None:
+                break
+            # Convert byte array to ndarray which is compatible with OpenCV Mat data type
+            frame = np.frombuffer(raw_frame, dtype=np.uint8).reshape(
+                (3, self._video_height, self._video_width)
+            )
+            # Pack RGB values by pixels
+            frame = np.moveaxis(frame[::-1], 0, -1)
+            cv2.imshow("demo", frame)
+            # Handle pressed keys
+            key = cv2.waitKey(1)
+            if key & 0xFF == ord("q"):  # stop
+                break
+            elif key & 0xFF == ord(" "):  # pause
+                while cv2.waitKey(0) & 0xFF != ord(" "):
+                    pass
+
+            wait_time = 1 / self._video_frame_rate - (time() - start_time)
+            if wait_time > 0:
+                self._output_stream.write(
+                    self._input_audio.readframes(self._samples_per_frame)
+                )
+                sleep(wait_time)
+
         cv2.destroyAllWindows()
+        cv2.waitKey(1)
+
+        self._output_stream.stop_stream()
+        self._output_stream.close()
+        self._player.terminate()
+        self._input_video.close()
+        self._input_audio.close()

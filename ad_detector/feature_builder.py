@@ -12,7 +12,7 @@ class FeatureBuilder:
         self.input_audio = input_audio
         
         with open("config.yaml") as file:
-            self.rate = yaml.safe_load(file)['audio']['rate']
+            self.rate = yaml.safe_load(file)['audio']['frame_rate']
         
         self.shots = shots
         self.audio_segments = self._segment_audio()

@@ -15,7 +15,7 @@ class ShotClassifier:
         
         with open("config.yaml") as file:
             config = yaml.safe_load(file)
-            self.audio_rate = config['audio']['rate']
+            self.audio_rate = config['audio']['frame_rate']
     
     def classify(self):
         # Pass 1: 1 seconds <= duration <= 10 seconds
