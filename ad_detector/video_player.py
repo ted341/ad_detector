@@ -41,7 +41,7 @@ class VideoPlayer:
             # Pack RGB values by pixels
             frame = np.moveaxis(frame[::-1], 0, -1)
             cv2.imshow("demo", frame)
-            key = cv2.waitKey(10)
+            key = cv2.waitKey(5)
             # Handle pressed keys
             if key & 0xFF == ord("q"):  # stop
                 break
@@ -53,7 +53,7 @@ class VideoPlayer:
                 self._input_audio.readframes(samples_per_frame)
             )
             # sleep for a while if needed
-            if (wait_time := interval - (time.time() - start_time) - 10) > 0:
+            if (wait_time := interval - (time.time() - start_time) - 0.005) > 0:
                 time.sleep(wait_time)
 
         cv2.destroyAllWindows()
