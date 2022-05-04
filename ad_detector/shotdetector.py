@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict
 import json
 
 from tqdm import tqdm
@@ -9,32 +9,16 @@ import ffmpeg
 from scenedetect import VideoManager, SceneManager
 from scenedetect.detectors import AdaptiveDetector
 
+from ad_detector.shot import Shot
 
-@dataclass
-class Shot:
-    sequence: int
-    start_frame: int
-    end_frame: int
-    start_timestamp: float
-    end_timestamp: float
-    features: dict = field(default_factory=lambda : {})
-    test_is_ad: bool = False
-    is_ad: bool = None
-    
-    @property
-    def duration(self):
-        return self.end_timestamp - self.start_timestamp
-    
-    
 
 class ShotDetector:
-    def __init__(self, input_video):
-        self.input_video = input_video
-        self._mp4_path = input_video[:-3] + 'mp4'
+    def __init__(self, video_name, frames):
+        self._mp4_path = video_name[:-3] + 'mp4'
         self.threshold = 3.0
-        self._preprocess_video()
+        self._preprocess_video(frames)
 
-    def _preprocess_video(self):
+    def _preprocess_video(self, frames):
         """ Convert .rgb and .wav file to .mp4 format for scenedetect API"""
         if os.path.exists(self._mp4_path):
             print('mp4 file already exists')
@@ -47,11 +31,6 @@ class ShotDetector:
             fps = format['video_fps']
         
         print('Start converting...')
-        raw_bytes = np.fromfile(self.input_video, np.dtype('B'))
-        n_frames = len(raw_bytes)//(height*width*3)
-        frames = raw_bytes.reshape((n_frames, 3, height, width))
-        frames = np.moveaxis(frames, 1, -1)  # pack rgb values per pixel
-        
         process = (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='rgb24', s=f'{width}x{height}', framerate=fps)
