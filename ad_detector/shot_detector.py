@@ -21,16 +21,16 @@ class ShotDetector:
     def _preprocess_video(self, frames):
         """ Convert .rgb and .wav file to .mp4 format for scenedetect API"""
         if os.path.exists(self._mp4_path):
-            print('mp4 file already exists')
+            print('\tmp4 file already exists')
             return
         
-        with open("format.yaml") as file:
-            format = yaml.safe_load(file)
-            height = format['video_height']
-            width = format['video_width']
-            fps = format['video_fps']
+        with open("config.yaml") as file:
+            config = yaml.safe_load(file)
+            height = config['video']['height']
+            width = config['video']['width']
+            fps = config['video']['fps']
         
-        print('Start converting...')
+        print('\tstart converting to mp4...')
         process = (
             ffmpeg
             .input('pipe:', format='rawvideo', pix_fmt='rgb24', s=f'{width}x{height}', framerate=fps)
@@ -69,7 +69,6 @@ class ShotDetector:
                               end_timestamp = timecode_end.get_seconds()))
         
         if save_json:
-            print('Saving to json')
             json_list = [asdict(shot) for shot in shots]
             with open('./shot-result/new-dataset.json', 'w') as file:
                 json.dump(json_list, file)
@@ -77,7 +76,7 @@ class ShotDetector:
         
         return shots
     
-    def from_json(self, i):
+    def detect_from_json(self, i):
         with open(f'./shot-result/dataset{i}.json') as file:
             shot_raw = json.load(file)
         return [ Shot(**shot_dict) for shot_dict in shot_raw ]

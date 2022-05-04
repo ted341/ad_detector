@@ -11,14 +11,14 @@ class FeatureBuilder:
         self.input_video = input_video
         self.input_audio = input_audio
         
-        with open("format.yaml") as file:
-            self.rate = yaml.safe_load(file)['audio_rate']
+        with open("config.yaml") as file:
+            self.rate = yaml.safe_load(file)['audio']['rate']
         
         self.shots = shots
         self.audio_segments = self._segment_audio()
     
     def _segment_audio(self):
-        print('Segment audio data...')
+        print('\tsegmenting audio data...', end='')
         segments = []
         with wave.open(self.input_audio, 'rb') as wf:
             for shot in self.shots:
@@ -28,10 +28,11 @@ class FeatureBuilder:
                 total_audio_frames = int((shot.duration) * self.rate)
                 raw_data = wf.readframes(total_audio_frames)
                 segments.append(np.frombuffer(raw_data, dtype=np.int16))
-            # self.__test_play_audio(wf, segments[-4])
+            # self._test_play_audio(wf, segments[12])
+        print('done')
         return segments
     
-    def __test_play_audio(self, wf, data):
+    def _test_play_audio(self, wf, data):
         import pyaudio
         p = pyaudio.PyAudio()
         stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),  # 2
@@ -45,14 +46,12 @@ class FeatureBuilder:
         p.terminate()
             
     def build(self):
-        print('Building features...', end='')
         for i, audio in enumerate(self.audio_segments):
             shot = self.shots[i]
             shot.features['entropy'] = self.build_spectral_entropy(audio)
             shot.features['duration'] = self.build_duration(shot)
             shot.features['snr'] = self.build_snr(audio)
             shot.features['edratio'] = shot.features['entropy'] / shot.features['duration']
-        print('done')
     
     def build_spectral_entropy(self, audio):
         return spectral_entropy(audio, self.rate)

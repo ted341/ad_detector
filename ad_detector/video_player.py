@@ -14,29 +14,26 @@ class CombinedFrame:
 
 
 class VideoPlayer:
-    def __init__(self, player_format):
+    def __init__(self, width, height, fps, audio_rate):
         self.is_paused = False
-        self.format = player_format
+        self.width = width
+        self.height = height
+        self.fps = fps
+        self.audio_rate = audio_rate
         self.data = []
     
     def load(self, video_path, audio_path):
         t1 = time()
         
         # Load Video
-        width = self.format['video_width']
-        height = self.format['video_height']
-        fps = self.format['video_fps']
-        
         raw_bytes = np.fromfile(video_path, np.dtype('B'))
-        frame_count = len(raw_bytes) // (height*width*3)
-        frames = raw_bytes.reshape((frame_count, 3, height, width))
+        frame_count = len(raw_bytes) // (self.height*self.width*3)
+        frames = raw_bytes.reshape((frame_count, 3, self.height, self.width))
         frames = np.moveaxis(frames, 1, -1)  # pack rgb values per pixel
         
         # Load Audio
-        audio_rate = self.format['audio_rate']
-        
         self.wf = wave.open(audio_path, 'rb')
-        self.audio_sample_width = audio_rate // fps
+        self.audio_sample_width = self.audio_rate // self.fps
         
         # Combine video and audio and append it to self.data
         for i, frame in enumerate(frames):
@@ -62,7 +59,7 @@ class VideoPlayer:
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
                 
-                wait_time = 1 / self.format['video_fps'] - (time() - start_time)
+                wait_time = 1 / self.fps - (time() - start_time)
                 if wait_time > 0:
                     stream.write(frame.audio) # Sequencial
                     sleep(wait_time)

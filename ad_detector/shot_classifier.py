@@ -13,9 +13,9 @@ class ShotClassifier:
     def __init__(self, shots):
         self.shots = shots
         
-        with open("format.yaml") as file:
-            format = yaml.safe_load(file)
-            self.audio_rate = format['audio_rate']
+        with open("config.yaml") as file:
+            config = yaml.safe_load(file)
+            self.audio_rate = config['audio']['rate']
     
     def classify(self):
         # Pass 1: 1 seconds <= duration <= 10 seconds
@@ -56,8 +56,8 @@ class ShotClassifier:
                 for i in range(scene['start_seq'], scene['end_seq']+1):
                     self.shots[i].is_ad = not scene['is_ad']
         
-        print(''.join(['A' if shot.is_ad else 'N' for shot in self.shots]))
-        print(''.join(['A' if shot.test_is_ad else 'N' for shot in self.shots]))    
+        print('\t' + ''.join(['A' if shot.is_ad else 'N' for shot in self.shots]))
+        print('\t' + ''.join(['A' if shot.test_is_ad else 'N' for shot in self.shots]))    
     
     def plot(self):
         self._plot2D('edratio', 'duration')
@@ -67,12 +67,6 @@ class ShotClassifier:
         is_ad = []
         not_ad = []
         for i, shot in enumerate(self.shots):
-            # only print out non-classified shots
-            # if shot.is_ad is not None:
-            #     if shot.is_ad != shot.test_is_ad:
-            #         print('WRONG!!!', i, is_ad, shot)
-            #     continue
-            
             if shot.test_is_ad:
                 is_ad.append((shot.features[xlabel], shot.features[ylabel]))
             else:

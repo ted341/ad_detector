@@ -30,12 +30,14 @@ class OutputGenerator:
         self.wf = wave.open(input_audio, 'rb')
         self.output_groups = []
         
-        with open("format.yaml") as file:
-            format = yaml.safe_load(file)
-            self.video_width = format['video_width']
-            self.video_height = format['video_height']
-            self.video_fps = format['video_fps']
-            self.audio_rate = format['audio_rate']
+        with open("config.yaml") as file:
+            config = yaml.safe_load(file)
+            self.video_width = config['video']['width']
+            self.video_height = config['video']['height']
+            self.video_fps = config['video']['frame_rate']
+            self.audio_rate = config['audio']['rate']
+            self.ad_path = config['ad']
+            
     
     def replace_logo(self, logos):
         og = OutputGroup()
@@ -48,10 +50,18 @@ class OutputGenerator:
                 og.audio_sample_count += int(shot.duration * self.audio_rate)
                 
                 # check if logo is detected within the shot
-                for logo in logos:
-                    if shot.start_timestamp <= logo['time'] <= shot.end_timestamp:
-                        detected_logo = logo['logo']
+                for logo_name, frame_list in logos.items():
+                    if detected_logo:
                         break
+                    for frame_no in frame_list:
+                        if shot.start_frame <= frame_no <= shot.end_frame:
+                            detected_logo = logo_name
+                            break
+                
+                # for logo in logos:
+                #     if shot.start_timestamp <= logo['time'] <= shot.end_timestamp:
+                #         detected_logo = logo['logo']
+                #         break
             # First ad after scenes
             elif not og.is_empty:
                 self.output_groups.append(og)
@@ -72,14 +82,15 @@ class OutputGenerator:
     
     def _output_video(self):
         with open(self.output_video, 'wb') as video_file:
-            for og in self.output_groups:
+            for i, og in enumerate(self.output_groups):
                 if og.source == 'original':
                     for frame_no in trange(og.video_start_frame, og.video_end_frame):
-                        frame_tmp = np.moveaxis(self.frames[frame_no], -1, 0)
-                        frame_tmp.tofile(video_file)
+                        self.frames[frame_no].tofile(video_file)
+                        # frame_tmp = np.moveaxis(self.frames[frame_no], -1, 0)
+                        # frame_tmp.tofile(video_file)
                 else:
-                    print(f'\tSaving data from {og.source}_Ad_15s.rgb')
-                    with open(f'./dataset2/Ads/{og.source}_Ad_15s.rgb', 'rb') as ad_rgb_file:
+                    print(f'\tSaving {self.ad_path[og.source]}.rgb')
+                    with open(f'{self.ad_path[og.source]}.rgb', 'rb') as ad_rgb_file:
                         while data := ad_rgb_file.read(1024):
                             video_file.write(data)
         
@@ -89,14 +100,14 @@ class OutputGenerator:
             audio_file.setsampwidth(2) # 2 * 8 = 16 bits
             audio_file.setframerate(self.audio_rate)
             
-            for og in self.output_groups:
+            for i, og in enumerate(self.output_groups):
                 if og.source == 'original':
                     self.wf.setpos(og.audio_start_frame)
                     data = self.wf.readframes(og.audio_sample_count)
                     audio_file.writeframesraw(data)
                 else:
-                    print(f'\tSaving data from {og.source}_Ad_15s.wav')
-                    with open(f'./dataset2/Ads/{og.source}_Ad_15s.wav', 'rb') as ad_audio_file:
+                    print(f'\tSaving {self.ad_path[og.source]}.wav')
+                    with open(f'{self.ad_path[og.source]}.wav', 'rb') as ad_audio_file:
                         while data := ad_audio_file.read(1024):
                             audio_file.writeframesraw(data)
         

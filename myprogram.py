@@ -5,10 +5,10 @@ print('Loading packages...')
 import click
 import yaml
 
-from ad_detector.shotdetector import ShotDetector
-from ad_detector.featurebuilder import FeatureBuilder
+from ad_detector.shot_detector import ShotDetector
+from ad_detector.feature_builder import FeatureBuilder
 from ad_detector.logo_detector import LogoDetector
-from ad_detector.shotclassifier import ShotClassifier
+from ad_detector.shot_classifier import ShotClassifier
 from ad_detector.output_generator import OutputGenerator
 
 @click.command()
@@ -18,31 +18,40 @@ from ad_detector.output_generator import OutputGenerator
 @click.argument('output_audio', type=click.Path())
 @click.option('-d', '--dataset', 'dataset', type=int, default=None)
 def main(input_video, input_audio, output_video, output_audio, dataset):
-    print('Start detecting...')
     with open("config.yaml") as f:
         config = yaml.safe_load(f)
     
+    print('Logo detecting...')
     logo_detector = LogoDetector(input_video, output_video, config)
-    # return all frames after processing
-    frames = logo_detector.run()
+    frames = logo_detector.run()  # {'ae': [1362, 1951, 2124, 7470]}
+    print(logo_detector.get_detected_framelist())
     
-    shot_detector = ShotDetector(input_video)
-
-    if dataset is None:
-        shots = shot_detector.detect(save_json=True)
-    else:
-        shots = shot_detector.from_json(dataset)
-    print('Detecting done')
+    # testing 
+    # import numpy as np
+    # raw_bytes = np.fromfile(input_video, np.dtype('B'))
+    # n_frames = len(raw_bytes)//(270*480*3)
+    # frames = raw_bytes.reshape((n_frames, 3, 270, 480)) # shape = (9000, 3, 270, 480)
+    # frames = np.moveaxis(frames, 1, -1)  # pack rgb values per pixel to shape (9000, 270, 480, 3)
     
+    print('Shot detecting...')
+    shot_detector = ShotDetector(input_video, frames)
+    shots = shot_detector.detect(save_json=True)
+    # shots = shot_detector.detect_from_json(dataset)
+    
+    print('Building features...')
     feature_builder = FeatureBuilder(shots, input_video, input_audio)
     feature_builder.build()
     
+    print('Classify shots...')
     shot_classifier = ShotClassifier(shots)
     shot_classifier.classify()
     # shot_classifier.plot()
     
+    print('Generating output...')
     output_generator = OutputGenerator(shots, input_audio, frames, output_video, output_audio)
-    output_generator.replace_logo([{"time": 99, "logo": "mcd"}, {"time": 100, "logo": "mcd"}, {"time": 220, "logo": "nfl"}])
+    
+    # output_generator.replace_logo(logo_detector.get_detected_framelist())
+    output_generator.replace_logo({"subway": [1]})
     output_generator.output()
     
     

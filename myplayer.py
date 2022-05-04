@@ -2,16 +2,19 @@
 import yaml
 import click
 
-from ad_detector.videoplayer import VideoPlayer
+from ad_detector.video_player import VideoPlayer
 
 @click.command()
 @click.argument('video_path', type=click.Path(exists=True))
 @click.argument('audio_path', type=click.Path(exists=True))
 def main(video_path, audio_path):
-    with open("format.yaml") as file:
-        player_format = yaml.safe_load(file)
+    with open("config.yaml") as file:
+        config = yaml.safe_load(file)
     
-    player = VideoPlayer(player_format)
+    player = VideoPlayer(config['video']['width'],
+                         config['video']['height'],
+                         config['video']['frame_rate'],
+                         config['audio']['rate'])
     player.load(video_path, audio_path)
     player.play()
 
