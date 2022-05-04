@@ -1,5 +1,5 @@
-from time import time, sleep
 import numpy as np
+import time
 import wave
 import pyaudio
 import cv2
@@ -19,19 +19,20 @@ class VideoPlayer:
 
         self._video_height = config["video"]["height"]
         self._video_width = config["video"]["width"]
-        self._frame_size = self._video_height * self._video_width * 3
         self._video_frame_rate = config["video"]["frame_rate"] or 30
-        # audio samples in the length of a video frame
-        self._samples_per_frame = (
-            self._input_audio.getframerate() // self._video_frame_rate
-        )
 
     def play(self):
 
+        interval = 1 / self._video_frame_rate
+        frame_size = self._video_height * self._video_width * 3
+        samples_per_frame = (
+            self._input_audio.getframerate() // self._video_frame_rate
+        )
+
         while True:
-            start_time = time()
+            start_time = time.time()
             # Read one frame at a time
-            if (raw_frame := self._input_video.read(self._frame_size)) is None:
+            if (raw_frame := self._input_video.read(frame_size)) is None:
                 break
             # Convert byte array to ndarray which is compatible with OpenCV Mat data type
             frame = np.frombuffer(raw_frame, dtype=np.uint8).reshape(
@@ -40,20 +41,20 @@ class VideoPlayer:
             # Pack RGB values by pixels
             frame = np.moveaxis(frame[::-1], 0, -1)
             cv2.imshow("demo", frame)
+            key = cv2.waitKey(10)
             # Handle pressed keys
-            key = cv2.waitKey(1)
             if key & 0xFF == ord("q"):  # stop
                 break
             elif key & 0xFF == ord(" "):  # pause
                 while cv2.waitKey(0) & 0xFF != ord(" "):
                     pass
-
-            wait_time = 1 / self._video_frame_rate - (time() - start_time)
-            if wait_time > 0:
-                self._output_stream.write(
-                    self._input_audio.readframes(self._samples_per_frame)
-                )
-                sleep(wait_time)
+            # write audio stream
+            self._output_stream.write(
+                self._input_audio.readframes(samples_per_frame)
+            )
+            # sleep for a while if needed
+            if (wait_time := interval - (time.time() - start_time) - 10) > 0:
+                time.sleep(wait_time)
 
         cv2.destroyAllWindows()
         cv2.waitKey(1)
