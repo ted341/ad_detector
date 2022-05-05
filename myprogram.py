@@ -4,6 +4,7 @@ print('Loading packages...')
 
 import click
 import yaml
+import time
 
 from ad_detector.shot_detector import ShotDetector
 from ad_detector.feature_builder import FeatureBuilder
@@ -22,16 +23,17 @@ def main(input_video, input_audio, output_video, output_audio, dataset):
         config = yaml.safe_load(f)
     
     print('Logo detecting...')
+    t1 = time.time()
     logo_detector = LogoDetector(input_video, output_video, config)
     frames = logo_detector.run()  # {'ae': [1362, 1951, 2124, 7470]}
     print(logo_detector.get_detected_framelist())
+    print('done, time used:', time.time() - t1)
     
     # testing 
     # import numpy as np
     # raw_bytes = np.fromfile(input_video, np.dtype('B'))
     # n_frames = len(raw_bytes)//(270*480*3)
     # frames = raw_bytes.reshape((n_frames, 3, 270, 480)) # shape = (9000, 3, 270, 480)
-    # frames = np.moveaxis(frames, 1, -1)  # pack rgb values per pixel to shape (9000, 270, 480, 3)
     
     print('Shot detecting...')
     shot_detector = ShotDetector(input_video, frames)
@@ -39,7 +41,7 @@ def main(input_video, input_audio, output_video, output_audio, dataset):
     # shots = shot_detector.detect_from_json(dataset)
     
     print('Building features...')
-    feature_builder = FeatureBuilder(shots, input_video, input_audio)
+    feature_builder = FeatureBuilder(shots, frames, input_audio)
     feature_builder.build()
     
     print('Classify shots...')
@@ -50,8 +52,7 @@ def main(input_video, input_audio, output_video, output_audio, dataset):
     print('Generating output...')
     output_generator = OutputGenerator(shots, input_audio, frames, output_video, output_audio)
     
-    # output_generator.replace_logo(logo_detector.get_detected_framelist())
-    output_generator.replace_logo({"subway": [1]})
+    output_generator.replace_logo(logo_detector.get_detected_framelist())
     output_generator.output()
     
     

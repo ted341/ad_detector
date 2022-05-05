@@ -5,3 +5,4 @@ dataset*
 ad_detector/__pycache__
 output*
 test2
+result/

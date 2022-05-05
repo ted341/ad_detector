@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 
 class LogoDetector:
@@ -126,6 +127,7 @@ class LogoDetector:
         logo2_kps, logo2_desc = self._detect_features(logo2_image)
 
         i = 0
+        pbar = tqdm(total=100)
         # Do processing frame by frame
         while raw := self.input_video.read(frame_size):
             # Convert byte array to ndarray which is compatible with OpenCV Mat data type
@@ -175,6 +177,7 @@ class LogoDetector:
 
             result.append(frame)
             i += 1
+            pbar.update(100/9000)
 
         # Close all the frames
         cv2.destroyAllWindows()
@@ -183,6 +186,8 @@ class LogoDetector:
         # Close files
         self.input_video.close()
         self.output_video.close()
+        
+        pbar.close()
 
         return result
 

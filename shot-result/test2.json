@@ -1,0 +1,398 @@
+[
+    {
+        "sequence": 0,
+        "start_frame": 0,
+        "end_frame": 1425,
+        "start_timestamp": 0.0,
+        "end_timestamp": 47.5,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 1,
+        "start_frame": 1425,
+        "end_frame": 2585,
+        "start_timestamp": 47.5,
+        "end_timestamp": 86.16666666666667,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 2,
+        "start_frame": 2585,
+        "end_frame": 2715,
+        "start_timestamp": 86.16666666666667,
+        "end_timestamp": 90.5,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 3,
+        "start_frame": 2715,
+        "end_frame": 2783,
+        "start_timestamp": 90.5,
+        "end_timestamp": 92.76666666666667,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 4,
+        "start_frame": 2783,
+        "end_frame": 2843,
+        "start_timestamp": 92.76666666666667,
+        "end_timestamp": 94.76666666666667,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 5,
+        "start_frame": 2843,
+        "end_frame": 2926,
+        "start_timestamp": 94.76666666666667,
+        "end_timestamp": 97.53333333333333,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 6,
+        "start_frame": 2926,
+        "end_frame": 3035,
+        "start_timestamp": 97.53333333333333,
+        "end_timestamp": 101.16666666666667,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 7,
+        "start_frame": 3035,
+        "end_frame": 3459,
+        "start_timestamp": 101.16666666666667,
+        "end_timestamp": 115.3,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 8,
+        "start_frame": 3459,
+        "end_frame": 4209,
+        "start_timestamp": 115.3,
+        "end_timestamp": 140.3,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 9,
+        "start_frame": 4209,
+        "end_frame": 4235,
+        "start_timestamp": 140.3,
+        "end_timestamp": 141.16666666666666,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 10,
+        "start_frame": 4235,
+        "end_frame": 4262,
+        "start_timestamp": 141.16666666666666,
+        "end_timestamp": 142.06666666666666,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 11,
+        "start_frame": 4262,
+        "end_frame": 4301,
+        "start_timestamp": 142.06666666666666,
+        "end_timestamp": 143.36666666666667,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 12,
+        "start_frame": 4301,
+        "end_frame": 4327,
+        "start_timestamp": 143.36666666666667,
+        "end_timestamp": 144.23333333333332,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 13,
+        "start_frame": 4327,
+        "end_frame": 4368,
+        "start_timestamp": 144.23333333333332,
+        "end_timestamp": 145.6,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 14,
+        "start_frame": 4368,
+        "end_frame": 4399,
+        "start_timestamp": 145.6,
+        "end_timestamp": 146.63333333333333,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 15,
+        "start_frame": 4399,
+        "end_frame": 4435,
+        "start_timestamp": 146.63333333333333,
+        "end_timestamp": 147.83333333333334,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 16,
+        "start_frame": 4435,
+        "end_frame": 4460,
+        "start_timestamp": 147.83333333333334,
+        "end_timestamp": 148.66666666666666,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 17,
+        "start_frame": 4460,
+        "end_frame": 4495,
+        "start_timestamp": 148.66666666666666,
+        "end_timestamp": 149.83333333333334,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 18,
+        "start_frame": 4495,
+        "end_frame": 4518,
+        "start_timestamp": 149.83333333333334,
+        "end_timestamp": 150.6,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 19,
+        "start_frame": 4518,
+        "end_frame": 4548,
+        "start_timestamp": 150.6,
+        "end_timestamp": 151.6,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 20,
+        "start_frame": 4548,
+        "end_frame": 4580,
+        "start_timestamp": 151.6,
+        "end_timestamp": 152.66666666666666,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 21,
+        "start_frame": 4580,
+        "end_frame": 4684,
+        "start_timestamp": 152.66666666666666,
+        "end_timestamp": 156.13333333333333,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 22,
+        "start_frame": 4684,
+        "end_frame": 5292,
+        "start_timestamp": 156.13333333333333,
+        "end_timestamp": 176.4,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 23,
+        "start_frame": 5292,
+        "end_frame": 5865,
+        "start_timestamp": 176.4,
+        "end_timestamp": 195.5,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 24,
+        "start_frame": 5865,
+        "end_frame": 7006,
+        "start_timestamp": 195.5,
+        "end_timestamp": 233.53333333333333,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 25,
+        "start_frame": 7006,
+        "end_frame": 7085,
+        "start_timestamp": 233.53333333333333,
+        "end_timestamp": 236.16666666666666,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 26,
+        "start_frame": 7085,
+        "end_frame": 7205,
+        "start_timestamp": 236.16666666666666,
+        "end_timestamp": 240.16666666666666,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 27,
+        "start_frame": 7205,
+        "end_frame": 7270,
+        "start_timestamp": 240.16666666666666,
+        "end_timestamp": 242.33333333333334,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 28,
+        "start_frame": 7270,
+        "end_frame": 7328,
+        "start_timestamp": 242.33333333333334,
+        "end_timestamp": 244.26666666666668,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 29,
+        "start_frame": 7328,
+        "end_frame": 7384,
+        "start_timestamp": 244.26666666666668,
+        "end_timestamp": 246.13333333333333,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 30,
+        "start_frame": 7384,
+        "end_frame": 7456,
+        "start_timestamp": 246.13333333333333,
+        "end_timestamp": 248.53333333333333,
+        "features":
+        {},
+        "test_is_ad": true,
+        "is_ad": null
+    },
+    {
+        "sequence": 31,
+        "start_frame": 7456,
+        "end_frame": 8624,
+        "start_timestamp": 248.53333333333333,
+        "end_timestamp": 287.46666666666664,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 32,
+        "start_frame": 8624,
+        "end_frame": 8800,
+        "start_timestamp": 287.46666666666664,
+        "end_timestamp": 293.3333333333333,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 33,
+        "start_frame": 8800,
+        "end_frame": 8864,
+        "start_timestamp": 293.3333333333333,
+        "end_timestamp": 295.46666666666664,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 34,
+        "start_frame": 8864,
+        "end_frame": 8964,
+        "start_timestamp": 295.46666666666664,
+        "end_timestamp": 298.8,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    },
+    {
+        "sequence": 35,
+        "start_frame": 8964,
+        "end_frame": 8994,
+        "start_timestamp": 298.8,
+        "end_timestamp": 299.8,
+        "features":
+        {},
+        "test_is_ad": false,
+        "is_ad": null
+    }
+]

@@ -28,7 +28,7 @@ class ShotDetector:
             config = yaml.safe_load(file)
             height = config['video']['height']
             width = config['video']['width']
-            fps = config['video']['fps']
+            fps = config['video']['frame_rate']
         
         print('\tstart converting to mp4...')
         process = (
@@ -77,6 +77,6 @@ class ShotDetector:
         return shots
     
     def detect_from_json(self, i):
-        with open(f'./shot-result/dataset{i}.json') as file:
+        with open(f'./shot-result/test2.json') as file:
             shot_raw = json.load(file)
         return [ Shot(**shot_dict) for shot_dict in shot_raw ]
