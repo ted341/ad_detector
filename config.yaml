@@ -12,9 +12,11 @@ logo:
     - "dataset2/Brand Images/nfl_logo.bmp"
     - "dataset3/Brand Images/ae_logo.bmp"
     - "dataset3/Brand Images/hrc_logo.bmp"
+    - "test2/Brand Images/starbucks_logo.bmp"
+    - "test2/Brand Images/subway_logo.bmp"
 detect:
-  debug: true
-  export: false
+  debug: false
+  export: true
   gamma: 1.6
   saturation: 1.15
   ratio: 0.7
@@ -31,4 +33,4 @@ detect:
     sigma: 1.6
 demo:
   # 0-2
-  testcase: 2
+  testcase: 3

@@ -32,7 +32,7 @@ class VideoPlayer:
         while True:
             start_time = time.time()
             # Read one frame at a time
-            if (raw_frame := self._input_video.read(frame_size)) is None:
+            if not (raw_frame := self._input_video.read(frame_size)):
                 break
             # Convert byte array to ndarray which is compatible with OpenCV Mat data type
             frame = np.frombuffer(raw_frame, dtype=np.uint8).reshape(
@@ -40,6 +40,11 @@ class VideoPlayer:
             )
             # Pack RGB values by pixels
             frame = np.moveaxis(frame[::-1], 0, -1)
+            # write audio stream before video
+            self._output_stream.write(
+                self._input_audio.readframes(samples_per_frame)
+            )
+            # show video frame
             cv2.imshow("demo", frame)
             key = cv2.waitKey(5)
             # Handle pressed keys
@@ -48,10 +53,6 @@ class VideoPlayer:
             elif key & 0xFF == ord(" "):  # pause
                 while cv2.waitKey(0) & 0xFF != ord(" "):
                     pass
-            # write audio stream
-            self._output_stream.write(
-                self._input_audio.readframes(samples_per_frame)
-            )
             # sleep for a while if needed
             if (wait_time := interval - (time.time() - start_time) - 0.005) > 0:
                 time.sleep(wait_time)
