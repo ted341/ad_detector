@@ -58,10 +58,6 @@ class LogoDetector:
         return good_matches
 
     def _draw_bounding_box(self, frame, matches, query_kps, train_kps) -> bool:
-        # Skip if too few match points
-        if len(matches) < 8:
-            return False
-
         # Collect points of matching features from query and train images
         src_pts = np.float32([query_kps[m[0].queryIdx].pt for m in matches]).reshape(-1, 1, 2)
         dst_pts = np.float32([train_kps[m[0].trainIdx].pt for m in matches]).reshape(-1, 1, 2)
@@ -145,19 +141,24 @@ class LogoDetector:
             tmp_frame = self._increase_saturation(frame)
             # Generate features from the image
             frame_kps, frame_desc = self._detect_features(tmp_frame)
-            # Perform Knn matching
-            matches = self._match_descriptors(logo_desc, frame_desc)
-            # Highlight the logo on the frame
-            if self._draw_bounding_box(frame, matches, logo_kps, frame_kps):
-                self._detections.setdefault(logo_name, [])
-                self._detections[logo_name].append(i)
-            else:
+
+            if logo_name not in self._detections or i-self._detections[logo_name][-1] <= 300:
+                # Perform Knn matching
+                matches = self._match_descriptors(logo_desc, frame_desc)
+                # Highlight the logo on the frame
+                if len(matches) >= 8:
+                    if self._draw_bounding_box(frame, matches, logo_kps, frame_kps):
+                        self._detections.setdefault(logo_name, [])
+                        self._detections[logo_name].append(i)
+
+            elif logo2_name not in self._detections or i-self._detections[logo2_name][-1] <= 300:
                 # Detect second logo
                 matches = self._match_descriptors(logo2_desc, frame_desc)
                 # Highlight the logo on the frame
-                if self._draw_bounding_box(frame, matches, logo2_kps, frame_kps):
-                    self._detections.setdefault(logo2_name, [])
-                    self._detections[logo2_name].append(i)
+                if len(matches) >= 8:
+                    if self._draw_bounding_box(frame, matches, logo2_kps, frame_kps):
+                        self._detections.setdefault(logo2_name, [])
+                        self._detections[logo2_name].append(i)
 
             if self.show_result:
                 # Display the resulting frame
